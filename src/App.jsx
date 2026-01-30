@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import "./App.css";
 
 export default function App() {
   // Chat state
@@ -70,13 +71,21 @@ export default function App() {
                 marginBottom: "10px",
               }}
             >
-              <span style={styles.bubble}>{msg.text}</span>
+              <div style={styles.bubble}>{msg.text}</div>
             </div>
           ))}
 
           {loading && (
             <div style={{ textAlign: "left", marginBottom: "10px" }}>
-              <span style={styles.loader}>Thinking...</span>
+              <div style={styles.bubble} className="message-loading" aria-live="polite" aria-label="Thinking">
+                <span className="sr-only">Thinking...</span>
+                <span className="thinking-text">Thinking</span>
+                <div className="bubble-loader small" aria-hidden="true">
+                  <div className="bubble" />
+                  <div className="bubble" />
+                  <div className="bubble" />
+                </div>
+              </div>
             </div>
           )}
 
