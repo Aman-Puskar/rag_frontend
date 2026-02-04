@@ -77,6 +77,15 @@
   border: 1px solid rgba(255,255,255,0.03);
 }
 
+/* Ensure message bubbles do not overflow and wrap long words */
+.message-bubble {
+  overflow-wrap: anywhere; /* allow breaking within long words */
+  word-break: break-word; /* compatible fallback */
+  white-space: pre-wrap;  /* preserve user newlines but wrap text */
+  display: inline-block;
+  max-width: 70%;
+}
+
 /* Input and button customizations */
 .chat-input:focus {
   box-shadow: 0 0 0 4px rgba(14,165,164,0.12);
@@ -213,5 +222,48 @@
 @media (max-width: 420px) {
   .mic-button { width: 40px; height: 36px; }
   .mic-icon { width: 18px; height: 18px; }
+}
+
+/* Prevent scroll chaining so message container doesn't cause page scroll */
+.messages-container {
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* Ensure the chat box also contains overscroll to avoid propagation */
+.chat-box, .chatBox {
+  overscroll-behavior: contain;
+}
+
+/* Animated typing styles */
+.animated-text {
+  white-space: pre-wrap;
+}
+
+.typing-caret {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  margin-left: 8px;
+  background: #e6eef8;
+  border-radius: 2px;
+  vertical-align: bottom;
+  animation: caret-blink 1s steps(2, start) infinite;
+  opacity: 0.95;
+}
+
+@keyframes caret-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* quick fade for new assistant bubbles (keeps things smooth) */
+.message-bubble.animated { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-caret { display: none !important; }
 }
 

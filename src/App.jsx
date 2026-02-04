@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
+import AnimatedMessage from "./components/AnimatedMessage";
 
 export default function App() {
   // Chat state
@@ -93,7 +94,7 @@ export default function App() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://rag-retrieval-backend.onrender.com/chat", {
+      const response = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userText }),
@@ -101,10 +102,13 @@ export default function App() {
 
       const data = await response.json();
 
+      const assistantId = Date.now() + 1;
+      // Add placeholder animated message; actual text will be revealed by the animation component
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 1, text: data.answer, isUser: false },
+        { id: assistantId, text: "", isUser: false, fullText: data.answer, animating: true },
       ]);
+      // Keep `loading` true until the animation completes (onComplete will clear it)
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -114,7 +118,6 @@ export default function App() {
           isUser: false,
         },
       ]);
-    } finally {
       setLoading(false);
     }
   };
@@ -133,11 +136,27 @@ export default function App() {
                 marginBottom: "10px",
               }}
             >
-              <div style={styles.bubble} className={`message-bubble ${msg.isUser ? 'user' : 'assistant'}`}>{msg.text}</div>
+              {msg.animating ? (
+                <AnimatedMessage
+                  fullText={msg.fullText}
+                  speed={6}
+                  onProgress={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })}
+                  onComplete={(finalText) => {
+                    setMessages((prev) =>
+                      prev.map((m) =>
+                        m.id === msg.id ? { ...m, text: finalText, animating: false, fullText: undefined } : m
+                      )
+                    );
+                    setLoading(false);
+                  }}
+                />
+              ) : (
+                <div style={styles.bubble} className={`message-bubble ${msg.isUser ? 'user' : 'assistant'}`}>{msg.text}</div>
+              )}
             </div>
           ))}  
 
-          {loading && (
+          {loading && !messages.some((m) => m.animating) && (
             <div style={{ textAlign: "left", marginBottom: "10px" }}>
               <div style={styles.bubble} className="message-loading message-bubble" aria-live="polite" aria-label="Thinking">
                 <span className="sr-only">Thinking...</span>
@@ -255,15 +274,21 @@ const styles = {
   input: {
     flex: 1,
     minWidth: 0,
-    padding: "8px 12px",
+    height: "40px",
+    padding: "6px 12px",
     borderRadius: "6px",
     border: "1px solid rgba(255,255,255,0.06)",
     background: "#0a1c3d",
     color: "#e6eef8",
     outline: "none",
+    boxSizing: "border-box",
   },
   button: {
-    padding: "8px 14px",
+    height: "40px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0 14px",
     borderRadius: "6px",
     cursor: "pointer",
     backgroundColor: "#7c3aed",
